@@ -2,12 +2,14 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { DbtRunner } from './dbtRunner';
 import { ProjectSetup } from './projectSetup';
+import { ConfigManager } from './configManager';
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('DBT Runner extension is now active');
 
     const dbtRunner = new DbtRunner();
     const projectSetup = new ProjectSetup();
+    const configManager = new ConfigManager();
 
     const runDbtCommand = vscode.commands.registerCommand('dbt-runner.runDbt', async () => {
         await dbtRunner.runDbtCommand();
@@ -17,7 +19,25 @@ export function activate(context: vscode.ExtensionContext) {
         await projectSetup.setupProject();
     });
 
-    context.subscriptions.push(runDbtCommand, setupProjectCommand);
+    const addSnowflakeAccountCommand = vscode.commands.registerCommand('dbt-runner.addSnowflakeAccount', async () => {
+        await configManager.addSnowflakeAccount();
+    });
+
+    const removeSnowflakeAccountCommand = vscode.commands.registerCommand('dbt-runner.removeSnowflakeAccount', async () => {
+        await configManager.removeSnowflakeAccount();
+    });
+
+    const listSnowflakeAccountsCommand = vscode.commands.registerCommand('dbt-runner.listSnowflakeAccounts', async () => {
+        await configManager.listSnowflakeAccounts();
+    });
+
+    context.subscriptions.push(
+        runDbtCommand, 
+        setupProjectCommand,
+        addSnowflakeAccountCommand,
+        removeSnowflakeAccountCommand,
+        listSnowflakeAccountsCommand
+    );
 
     if (vscode.workspace.workspaceFolders) {
         const config = vscode.workspace.getConfiguration('dbtRunner');

@@ -27,6 +27,18 @@
       {
         "command": "dbt-runner.setupProject",
         "title": "DBT: Setup Project (Poetry Install & DBT Deps)"
+      },
+      {
+        "command": "dbt-runner.addSnowflakeAccount",
+        "title": "DBT: Add Snowflake Account"
+      },
+      {
+        "command": "dbt-runner.removeSnowflakeAccount",
+        "title": "DBT: Remove Snowflake Account"
+      },
+      {
+        "command": "dbt-runner.listSnowflakeAccounts",
+        "title": "DBT: List Snowflake Accounts"
       }
     ],
     "keybindings": [
