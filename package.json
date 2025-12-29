@@ -3,7 +3,7 @@
   "displayName": "DBT Runner",
   "description": "VS Code extension for running dbt projects with Snowflake key pair authentication",
   "version": "0.1.0",
-  "publisher": "loves-data-engineering",
+  "publisher": "jason-zondor",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -44,7 +44,7 @@
             "properties": {
               "name": {
                 "type": "string",
-                "description": "Account name (e.g., 'loves_development', 'loves')"
+                "description": "Account name (e.g., 'dev_account', 'prod_account')"
               },
               "user": {
                 "type": "string",
