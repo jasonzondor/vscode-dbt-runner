@@ -42,40 +42,49 @@ A VS Code extension for managing and running dbt projects with Snowflake key pai
 
 ## Configuration
 
+### Quick Setup
+
+1. Open Settings: `Ctrl+,` (or `Cmd+,` on Mac)
+2. Search for **"DBT Runner"**
+3. Configure the following settings:
+
 ### Snowflake Accounts
 
-Configure your Snowflake accounts in VS Code settings:
-
-1. Open Settings (`Ctrl+,` or `Cmd+,`)
-2. Search for "DBT Runner"
-3. Add Snowflake account configurations:
+Click **"Edit in settings.json"** next to `Snowflake Accounts` and add your account configurations:
 
 ```json
 {
   "dbtRunner.snowflakeAccounts": [
     {
-      "name": "account_name",
-      "user": "your_username",
-      "privateKeyPath": "/path/to/your/private_key.p8",
-      "privateKeyPassphrase": ""
-    },
-    {
-      "name": "account_name",
-      "user": "your_username",
-      "privateKeyPath": "/path/to/your/private_key.p8",
+      "name": "dev_account",
+      "user": "your_snowflake_username",
+      "privateKeyPath": "/absolute/path/to/private_key.p8",
       "privateKeyPassphrase": ""
     }
   ]
 }
 ```
 
-**Note**: If you leave `privateKeyPassphrase` empty, you'll be prompted to enter it when running dbt commands.
+**Field Descriptions:**
+- **`name`** (required): Display name for the account (e.g., "dev_account", "prod_account")
+- **`user`** (required): Your Snowflake username
+- **`privateKeyPath`** (required): Absolute path to your `.p8` private key file
+- **`privateKeyPassphrase`** (optional): Leave empty (`""`) to be prompted at runtime for better security
+
+### Environments
+
+Configure your dbt target environments (must match targets in your `profiles.yml`):
+
+```json
+{
+  "dbtRunner.environments": ["dev", "prod", "staging"]
+}
+```
 
 ### Other Settings
 
-- **`dbtRunner.environments`**: List of available environments (default: `["dev", "prod"]`)
-- **`dbtRunner.autoSetupOnOpen`**: Automatically run setup when opening a dbt project (default: `false`)
 - **`dbtRunner.dbtProjectPath`**: Relative path to dbt project directory from workspace root (default: `"dbt"`)
+- **`dbtRunner.autoSetupOnOpen`**: Automatically run setup when opening a dbt project (default: `false`)
 
 ## Usage
 

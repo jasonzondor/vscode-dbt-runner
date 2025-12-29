@@ -42,28 +42,34 @@
         "dbtRunner.snowflakeAccounts": {
           "type": "array",
           "default": [],
-          "description": "Snowflake account configurations for key pair authentication",
+          "markdownDescription": "Configure Snowflake accounts for key pair authentication. Click 'Edit in settings.json' to add accounts.",
           "items": {
             "type": "object",
+            "required": ["name", "user", "privateKeyPath"],
             "properties": {
               "name": {
                 "type": "string",
-                "description": "Account name (e.g., 'dev_account', 'prod_account')"
+                "description": "Display name for this account",
+                "minLength": 1
               },
               "user": {
                 "type": "string",
-                "description": "Snowflake username"
+                "description": "Snowflake username",
+                "minLength": 1
               },
               "privateKeyPath": {
                 "type": "string",
-                "description": "Path to private key file"
+                "description": "Absolute path to private key file (.p8)",
+                "minLength": 1
               },
               "privateKeyPassphrase": {
                 "type": "string",
-                "description": "Private key passphrase (optional, can be left empty to prompt)"
+                "default": "",
+                "description": "Private key passphrase (leave empty to be prompted at runtime)"
               }
             }
-          }
+          },
+          "editPresentation": "multilineText"
         },
         "dbtRunner.environments": {
           "type": "array",
@@ -71,17 +77,25 @@
             "dev",
             "prod"
           ],
-          "description": "Available dbt environments/targets"
+          "markdownDescription": "List of dbt target environments. These should match targets in your `profiles.yml`.",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "uniqueItems": true
         },
         "dbtRunner.autoSetupOnOpen": {
           "type": "boolean",
           "default": false,
-          "description": "Automatically run poetry install and dbt deps when opening a dbt project"
+          "markdownDescription": "Automatically run `poetry install` and `dbt deps` when opening a dbt project",
+          "order": 3
         },
         "dbtRunner.dbtProjectPath": {
           "type": "string",
           "default": "dbt",
-          "description": "Relative path to dbt project directory from workspace root"
+          "markdownDescription": "Relative path to dbt project directory from workspace root",
+          "order": 2
         }
       }
     }
