@@ -4,6 +4,10 @@
   "description": "VS Code extension for running dbt projects with Snowflake key pair authentication",
   "version": "0.1.0",
   "publisher": "jason-zondor",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jasonzondor/code_dbt_runner.git"
+  },
   "engines": {
     "vscode": "^1.85.0"
   },
