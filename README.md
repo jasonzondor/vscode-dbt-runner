@@ -1,4 +1,4 @@
-# DBT Runner VS Code Extension
+# VS Code DBT Runner Extension
 
 A VS Code extension for managing and running dbt projects with Snowflake key pair authentication support. Designed for data engineering teams working with multiple independent dbt core projects.
 
@@ -29,16 +29,12 @@ A VS Code extension for managing and running dbt projects with Snowflake key pai
 
 ### From VSIX
 
-1. Package the extension:
-   ```bash
-   npm install -g @vscode/vsce
-   vsce package
-   ```
+1. Download the latest `.vsix` file from the [GitHub Releases](https://github.com/jasonzondor/vscode-dbt-runner/releases/latest) page
 2. Install the `.vsix` file in VS Code:
    - Open VS Code
    - Go to Extensions view (`Ctrl+Shift+X`)
    - Click the `...` menu → `Install from VSIX...`
-   - Select the generated `.vsix` file
+   - Select the downloaded `.vsix` file
 
 ## Configuration
 
@@ -188,15 +184,11 @@ outputs:
 ## Requirements
 
 - VS Code 1.85.0 or higher
+- Python 3.9 or higher installed on your system
 - Poetry installed on your system
-- dbt-core and dbt-snowflake (managed via Poetry)
 - Snowflake private key for authentication
 
 ## Troubleshooting
-
-### Extension not activating
-
-Make sure your workspace contains a `pyproject.toml` file. The extension activates when it detects a Poetry project.
 
 ### Commands not appearing
 
@@ -212,29 +204,14 @@ Verify that:
 
 ## Development
 
-### Building
-
-```bash
-npm install
-npm run compile
-```
-
-### Watching for changes
-
-```bash
-npm run watch
-```
-
-### Running tests
-
-```bash
-npm test
-```
+See CONTRIBUTING.md for development guidelines.
 
 ## License
 
 MIT
 
 ## Contributing
+
+See CONTRIBUTING.md for contribution guidelines.
 
 Contributions are welcome! Please feel free to submit a Pull Request.
