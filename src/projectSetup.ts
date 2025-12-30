@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { SnowflakeConfig } from './types';
+import { SnowflakeConfig, normalizePathForPython } from './types';
 
 export class ProjectSetup {
     private outputChannel: vscode.OutputChannel;
@@ -76,15 +76,11 @@ export class ProjectSetup {
             return;
         }
 
-        // Normalize private key path to use forward slashes for cross-platform compatibility
-        // This prevents issues with backslashes being misinterpreted by Python/dbt on Windows
-        const normalizedPrivateKeyPath = snowflakeConfig.privateKeyPath.split(path.sep).join('/');
-
         const env = {
             ...process.env,
             DBT_ACCOUNT: snowflakeConfig.account,
             DBT_USER: snowflakeConfig.user,
-            DBT_PVK_PATH: normalizedPrivateKeyPath,
+            DBT_PVK_PATH: normalizePathForPython(snowflakeConfig.privateKeyPath),
             DBT_PVK_PASS: snowflakeConfig.privateKeyPassphrase || ''
         };
 
