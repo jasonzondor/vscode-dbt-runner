@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { SnowflakeConfig } from './types';
+import { SnowflakeConfig, normalizePathForPython } from './types';
 
 export class ProjectSetup {
     private outputChannel: vscode.OutputChannel;
@@ -80,7 +80,7 @@ export class ProjectSetup {
             ...process.env,
             DBT_ACCOUNT: snowflakeConfig.account,
             DBT_USER: snowflakeConfig.user,
-            DBT_PVK_PATH: snowflakeConfig.privateKeyPath,
+            DBT_PVK_PATH: normalizePathForPython(snowflakeConfig.privateKeyPath),
             DBT_PVK_PASS: snowflakeConfig.privateKeyPassphrase || ''
         };
 
