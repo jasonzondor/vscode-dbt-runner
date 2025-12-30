@@ -1,5 +1,3 @@
-import * as path from 'path';
-
 export interface SnowflakeConfig {
     name: string;
     account: string;
@@ -17,8 +15,9 @@ export interface SnowflakeConfig {
  * @returns The normalized path with forward slashes, or the original path if it's empty
  */
 export function normalizePathForPython(filePath: string): string {
-    if (!filePath) {
+    if (!filePath || filePath.trim() === '') {
         return filePath;
     }
-    return filePath.split(path.sep).join('/');
+    // Replace all backslashes with forward slashes for Python/dbt compatibility
+    return filePath.replace(/\\/g, '/');
 }
