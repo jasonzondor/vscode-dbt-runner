@@ -6,7 +6,7 @@
   "publisher": "jason-zondor",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jasonzondor/code_dbt_runner.git"
+    "url": "https://github.com/jasonzondor/vscode-dbt-runner.git"
   },
   "engines": {
     "vscode": "^1.85.0"
