@@ -28,27 +28,57 @@
 
 7. Merge after approval and passing checks
 
-### Creating a Release
+### Commit Message Convention
 
-1. Update the version in `package.json`
+This project uses **Conventional Commits** for automated releases. Your commit messages should follow this format:
 
-2. Commit the version change:
-   ```bash
-   git add package.json
-   git commit -m "Bump version to X.Y.Z"
-   git push
-   ```
+```
+<type>(<scope>): <subject>
 
-3. Create and push a tag:
-   ```bash
-   git tag v0.1.0
-   git push origin v0.1.0
-   ```
+<body>
 
-4. The release workflow will automatically:
-   - Build the extension
-   - Create a GitHub release
-   - Attach the `.vsix` file to the release
+<footer>
+```
+
+**Types:**
+- `feat`: New feature (triggers minor version bump)
+- `fix`: Bug fix (triggers patch version bump)
+- `perf`: Performance improvement (triggers patch version bump)
+- `refactor`: Code refactoring (triggers patch version bump)
+- `docs`: Documentation changes (no release)
+- `style`: Code style changes (no release)
+- `test`: Test changes (no release)
+- `chore`: Maintenance tasks (no release)
+- `ci`: CI/CD changes (no release)
+
+**Breaking Changes:**
+- Add `BREAKING CHANGE:` in the footer or `!` after type (triggers major version bump)
+
+**Examples:**
+```bash
+feat: add pre-commit checks command
+fix: set environment variables for pre-commit
+feat!: change configuration structure (breaking change)
+docs: update README with new screenshots
+```
+
+### Automated Releases
+
+Releases are **fully automated** using semantic-release:
+
+1. **Merge to main/master**: When a PR is merged to the main branch, the release workflow automatically:
+   - Analyzes commit messages since the last release
+   - Determines the next version (major, minor, or patch)
+   - Updates `package.json` version
+   - Generates `CHANGELOG.md`
+   - Creates a Git tag
+   - Builds and packages the `.vsix` file
+   - Creates a GitHub Release with the VSIX attached
+   - Commits the version bump back to the repository
+
+2. **No manual versioning needed**: Don't manually update `package.json` version - semantic-release handles this automatically based on your commit messages.
+
+3. **Skip release**: Add `[skip ci]` to your commit message if you don't want to trigger a release.
 
 ### CI/CD Workflows
 
@@ -60,10 +90,11 @@
 - Uploads VSIX as an artifact (available for 30 days)
 
 **Release Workflow (`.github/workflows/release.yml`):**
-- Runs when you push a tag starting with `v` (e.g., `v0.1.0`)
-- Builds and packages the extension
-- Creates a GitHub release with the VSIX file attached
-- Generates release notes automatically
+- Runs automatically on every push to `main`/`master`
+- Uses semantic-release to determine if a release is needed
+- Automatically versions, tags, and publishes releases
+- Generates release notes from commit messages
+- Attaches VSIX file to GitHub Release
 
 ## Code Quality
 
