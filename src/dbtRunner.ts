@@ -4,6 +4,7 @@ import { SnowflakeConfig } from './types';
 
 export class DbtRunner {
     private outputChannel: vscode.OutputChannel;
+    private terminal: vscode.Terminal | undefined;
 
     constructor() {
         this.outputChannel = vscode.window.createOutputChannel('DBT Runner');
@@ -198,13 +199,15 @@ export class DbtRunner {
         this.outputChannel.appendLine(`User: ${snowflakeConfig.user}`);
         this.outputChannel.appendLine('---\n');
 
-        const terminal = vscode.window.createTerminal({
-            name: `DBT Runner: ${dbtCommand}`,
-            cwd: fullDbtPath,
-            env: env
-        });
+        if (!this.terminal || this.terminal.exitStatus !== undefined) {
+            this.terminal = vscode.window.createTerminal({
+                name: 'DBT Runner',
+                cwd: fullDbtPath,
+                env: env
+            });
+        }
 
-        terminal.show();
-        terminal.sendText(fullCommand);
+        this.terminal.show();
+        this.terminal.sendText(fullCommand);
     }
 }

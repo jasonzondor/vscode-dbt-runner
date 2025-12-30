@@ -2,6 +2,14 @@
 
 A VS Code extension for managing and running dbt projects with Snowflake key pair authentication support. Designed for data engineering teams working with multiple independent dbt core projects.
 
+## Screenshots
+
+### Command Palette
+![Command Palette](screenshot-command-palette.png)
+
+### Settings
+![Settings](screenshot-settings.png)
+
 ## Features
 
 - **Automated Project Setup**: Automatically run `poetry lock`, `poetry install`, and `dbt deps` when opening a dbt project
