@@ -12,7 +12,7 @@ A VS Code extension for managing and running dbt projects with Snowflake key pai
 
 ## Features
 
-- **Automated Project Setup**: Automatically run `poetry lock`, `poetry install`, and `dbt deps` when opening a dbt project
+- **Automated Project Setup (Optional)**: Automatically run `poetry lock`, `poetry install`, and `dbt deps` when opening a dbt project
 - **Interactive DBT Command Runner**: Execute dbt commands with guided prompts for:
   - Environment selection (dev, prod, etc.)
   - DBT command selection (run, build, test, seed, etc.)
@@ -21,6 +21,15 @@ A VS Code extension for managing and running dbt projects with Snowflake key pai
 - **Keyboard Shortcuts**: Quick access to dbt commands via `Ctrl+Shift+D` (or `Cmd+Shift+D` on Mac)
 
 ## Installation
+
+### From VSIX (Recommended)
+
+1. Download the latest `.vsix` file from the [GitHub Releases](https://github.com/jasonzondor/vscode-dbt-runner/releases/latest) page
+2. Install the `.vsix` file in VS Code:
+   - Open VS Code
+   - Go to Extensions view (`Ctrl+Shift+X`)
+   - Click the `...` menu → `Install from VSIX...`
+   - Select the downloaded `.vsix` file
 
 ### From Source
 
@@ -35,15 +44,6 @@ A VS Code extension for managing and running dbt projects with Snowflake key pai
    ```
 4. Press `F5` in VS Code to open a new window with the extension loaded
 
-### From VSIX
-
-1. Download the latest `.vsix` file from the [GitHub Releases](https://github.com/jasonzondor/vscode-dbt-runner/releases/latest) page
-2. Install the `.vsix` file in VS Code:
-   - Open VS Code
-   - Go to Extensions view (`Ctrl+Shift+X`)
-   - Click the `...` menu → `Install from VSIX...`
-   - Select the downloaded `.vsix` file
-
 ## Configuration
 
 ### Snowflake Accounts
@@ -55,8 +55,7 @@ The easiest way to add Snowflake accounts:
 1. Open Command Palette: `Ctrl+Shift+P` (or `Cmd+Shift+P` on Mac)
 2. Type **"DBT Runner: Add Snowflake Account"**
 3. Follow the prompts to enter:
-   - Display name for this configuration
-   - Snowflake account identifier (e.g., `xy12345.us-east-1`)
+   - DBT Profile Name **Must match a target in your `profiles.yml`**
    - Snowflake username
    - Private key file path
    - Whether to store passphrase (or be prompted at runtime)
@@ -77,15 +76,13 @@ Alternatively, edit settings.json directly:
 {
   "dbtRunner.snowflakeAccounts": [
     {
-      "name": "Development",
-      "account": "xy12345.us-east-1",
+      "name": "dev",
       "user": "your_snowflake_username",
       "privateKeyPath": "/absolute/path/to/private_key.p8",
       "privateKeyPassphrase": ""
     },
     {
-      "name": "Production",
-      "account": "ab67890.eu-west-1",
+      "name": "prod",
       "user": "prod_user",
       "privateKeyPath": "/absolute/path/to/prod_key.p8",
       "privateKeyPassphrase": ""
@@ -95,9 +92,8 @@ Alternatively, edit settings.json directly:
 ```
 
 **Field Descriptions:**
-- **`name`** (required): Display name for this configuration
-- **`account`** (required): Snowflake account identifier (e.g., `xy12345.us-east-1`, `myorg-myaccount`)
-- **`user`** (required): Your Snowflake username
+- **`name`** (required): DBT Profile Name **Must match a target in your `profiles.yml`**
+- **`user`** (required): Snowflake username
 - **`privateKeyPath`** (required): Absolute path to your `.p8` private key file
 - **`privateKeyPassphrase`** (optional): Leave empty (`""`) to be prompted at runtime
 
@@ -137,8 +133,7 @@ Run the setup command to install dependencies:
 2. Select the environment (dev, prod, etc.)
 3. Select the dbt command (run, build, test, etc.)
 4. Enter any additional parameters (optional)
-5. Select the Snowflake account (if multiple configured)
-6. Enter private key passphrase (if not configured)
+5. Enter private key passphrase (if not configured)
 
 The command will execute in a terminal with the appropriate environment variables set.
 
@@ -159,7 +154,6 @@ Run the dbt project evaluator to audit your dbt project:
 1. Open Command Palette (`Ctrl+Shift+P` or `Cmd+Shift+P`)
 2. Type "DBT Runner: Run DBT Project Evaluator"
 3. Select the environment (dev, prod, etc.)
-4. Select the Snowflake account (if multiple configured)
 5. Enter private key passphrase (if not configured)
 6. This will run: `poetry run dbt build --selector dbt_project_evaluator`
 
@@ -185,7 +179,6 @@ your-project/
 
 The extension sets the following environment variables when running dbt commands:
 
-- `DBT_ACCOUNT`: Snowflake account identifier from configuration
 - `DBT_USER`: Snowflake username from configuration
 - `DBT_PVK_PATH`: Path to private key file
 - `DBT_PVK_PASS`: Private key passphrase
@@ -193,13 +186,31 @@ The extension sets the following environment variables when running dbt commands
 These should match the environment variables referenced in your `profiles.yml`:
 
 ```yaml
-outputs:
-  dev:
-    type: snowflake
-    account: "{{ env_var('DBT_ACCOUNT') }}"
-    user: "{{ env_var('DBT_USER') }}"
-    private_key_path: "{{ env_var('DBT_PVK_PATH') }}"
-    private_key_passphrase: "{{ env_var('DBT_PVK_PASS') }}"
+ target: dev
+  outputs:
+    dev:
+      type: snowflake
+      threads: 4
+      account: loves_development
+      user: "{{ env_var('DBT_USER') }}"
+      private_key_path: "{{ env_var('DBT_PVK_PATH') }}"
+      private_key_passphrase: "{{ env_var('DBT_PVK_PASS') }}"
+      role: #role
+      warehouse: #warehouse
+      database: #database
+      schema: #schema
+
+    prod:
+      type: snowflake
+      threads: 4
+      account: loves
+      user: "{{ env_var('DBT_USER') }}"
+      private_key_path: "{{ env_var('DBT_PVK_PATH') }}"
+      private_key_passphrase: "{{ env_var('DBT_PVK_PASS') }}"
+      role: #role
+      warehouse: #warehouse
+      database: #database
+      schema: #schema
 ```
 
 ## Commands
