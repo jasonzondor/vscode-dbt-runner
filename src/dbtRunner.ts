@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { SnowflakeConfig, normalizePathForPython } from './types';
+import { ProfileConfig, normalizePathForPython } from './types';
 
 export class DbtRunner {
     private outputChannel: vscode.OutputChannel;
@@ -42,8 +42,8 @@ export class DbtRunner {
             return;
         }
 
-        const snowflakeConfig = await this.getSnowflakeConfig(environment);
-        if (!snowflakeConfig) {
+        const profileConfig = await this.getProfileConfig(environment);
+        if (!profileConfig) {
             return;
         }
 
@@ -52,7 +52,7 @@ export class DbtRunner {
             environment,
             dbtCommand,
             additionalParams,
-            snowflakeConfig
+            profileConfig
         );
     }
 
@@ -69,8 +69,8 @@ export class DbtRunner {
             return;
         }
 
-        const snowflakeConfig = await this.getSnowflakeConfig(environment);
-        if (!snowflakeConfig) {
+        const profileConfig = await this.getProfileConfig(environment);
+        if (!profileConfig) {
             return;
         }
 
@@ -79,7 +79,7 @@ export class DbtRunner {
             environment,
             'build',
             '--selector dbt_project_evaluator',
-            snowflakeConfig
+            profileConfig
         );
     }
 
@@ -129,48 +129,40 @@ export class DbtRunner {
         return params;
     }
 
-    private async getSnowflakeConfig(environment: string): Promise<SnowflakeConfig | undefined> {
+    private async getProfileConfig(environment: string): Promise<ProfileConfig | undefined> {
         const config = vscode.workspace.getConfiguration('dbtRunner');
-        const accounts = config.get<SnowflakeConfig[]>('snowflakeAccounts', []);
+        const configs = config.get<ProfileConfig[]>('profileConfigs', []);
 
-        if (accounts.length === 0) {
+        if (configs.length === 0) {
             const answer = await vscode.window.showWarningMessage(
-                'No Snowflake accounts configured. Would you like to configure one now?',
+                'No profile configurations found. Would you like to configure one now?',
                 'Yes', 'No'
             );
             
             if (answer === 'Yes') {
-                await vscode.commands.executeCommand('workbench.action.openSettings', 'dbtRunner.snowflakeAccounts');
+                await vscode.commands.executeCommand('workbench.action.openSettings', 'dbtRunner.profileConfigs');
             }
             return undefined;
         }
 
-        let selectedAccount: SnowflakeConfig | undefined;
-
-        if (accounts.length === 1) {
-            selectedAccount = accounts[0];
-        } else {
-            const accountNames = accounts.map(acc => acc.name);
-            const selected = await vscode.window.showQuickPick(accountNames, {
-                placeHolder: 'Select Snowflake account',
-                canPickMany: false
-            });
-
-            if (!selected) {
-                return undefined;
+        const matchingConfig = configs.find(cfg => cfg.profileTarget === environment);
+        
+        if (!matchingConfig) {
+            const answer = await vscode.window.showWarningMessage(
+                `No configuration found for profile target "${environment}". Would you like to configure it now?`,
+                'Yes', 'No'
+            );
+            
+            if (answer === 'Yes') {
+                await vscode.commands.executeCommand('dbt-runner.addProfileConfig');
             }
-
-            selectedAccount = accounts.find(acc => acc.name === selected);
-        }
-
-        if (!selectedAccount) {
             return undefined;
         }
 
-        let passphrase = selectedAccount.privateKeyPassphrase;
+        let passphrase = matchingConfig.privateKeyPassphrase;
         if (!passphrase) {
             passphrase = await vscode.window.showInputBox({
-                prompt: `Enter private key passphrase for ${selectedAccount.name}`,
+                prompt: `Enter private key passphrase for profile target "${matchingConfig.profileTarget}"`,
                 password: true
             });
 
@@ -180,7 +172,7 @@ export class DbtRunner {
         }
 
         return {
-            ...selectedAccount,
+            ...matchingConfig,
             privateKeyPassphrase: passphrase
         };
     }
@@ -190,7 +182,7 @@ export class DbtRunner {
         environment: string,
         dbtCommand: string,
         additionalParams: string,
-        snowflakeConfig: SnowflakeConfig
+        profileConfig: ProfileConfig
     ) {
         const config = vscode.workspace.getConfiguration('dbtRunner');
         const dbtProjectPath = config.get<string>('dbtProjectPath', 'dbt');
@@ -198,10 +190,9 @@ export class DbtRunner {
 
         const env = {
             ...process.env,
-            DBT_ACCOUNT: snowflakeConfig.account,
-            DBT_USER: snowflakeConfig.user,
-            DBT_PVK_PATH: normalizePathForPython(snowflakeConfig.privateKeyPath),
-            DBT_PVK_PASS: snowflakeConfig.privateKeyPassphrase || ''
+            DBT_USER: profileConfig.user,
+            DBT_PVK_PATH: normalizePathForPython(profileConfig.privateKeyPath),
+            DBT_PVK_PASS: profileConfig.privateKeyPassphrase || ''
         };
 
         const commandParts = ['poetry', 'run', 'dbt', ...dbtCommand.split(' ')];
@@ -220,10 +211,8 @@ export class DbtRunner {
         this.outputChannel.show();
         this.outputChannel.appendLine(`Running: ${fullCommand}`);
         this.outputChannel.appendLine(`Working directory: ${fullDbtPath}`);
-        this.outputChannel.appendLine(`Environment: ${environment}`);
-        this.outputChannel.appendLine(`Configuration: ${snowflakeConfig.name}`);
-        this.outputChannel.appendLine(`Snowflake Account: ${snowflakeConfig.account}`);
-        this.outputChannel.appendLine(`User: ${snowflakeConfig.user}`);
+        this.outputChannel.appendLine(`Profile Target: ${environment}`);
+        this.outputChannel.appendLine(`User: ${profileConfig.user}`);
         this.outputChannel.appendLine('---\n');
 
         if (!this.terminal || this.terminal.exitStatus !== undefined) {

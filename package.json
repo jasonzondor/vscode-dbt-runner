@@ -29,16 +29,16 @@
         "title": "DBT Runner: Setup Project (Poetry Install & DBT Deps)"
       },
       {
-        "command": "dbt-runner.addSnowflakeAccount",
-        "title": "DBT Runner: Add Snowflake Account"
+        "command": "dbt-runner.addProfileConfig",
+        "title": "DBT Runner: Add Profile Configuration"
       },
       {
-        "command": "dbt-runner.removeSnowflakeAccount",
-        "title": "DBT Runner: Remove Snowflake Account"
+        "command": "dbt-runner.removeProfileConfig",
+        "title": "DBT Runner: Remove Profile Configuration"
       },
       {
-        "command": "dbt-runner.listSnowflakeAccounts",
-        "title": "DBT Runner: List Snowflake Accounts"
+        "command": "dbt-runner.listProfileConfigs",
+        "title": "DBT Runner: List Profile Configurations"
       },
       {
         "command": "dbt-runner.runPreCommit",
@@ -59,27 +59,21 @@
     "configuration": {
       "title": "DBT Runner",
       "properties": {
-        "dbtRunner.snowflakeAccounts": {
+        "dbtRunner.profileConfigs": {
           "type": "array",
           "default": [],
-          "markdownDescription": "Configure Snowflake accounts for key pair authentication. Click 'Edit in settings.json' to add accounts.",
+          "markdownDescription": "Configure authentication credentials for dbt profile targets. Associate each profile target with Snowflake key pair authentication details.",
           "items": {
             "type": "object",
             "required": [
-              "name",
-              "account",
+              "profileTarget",
               "user",
               "privateKeyPath"
             ],
             "properties": {
-              "name": {
+              "profileTarget": {
                 "type": "string",
-                "description": "Display name for this configuration",
-                "minLength": 1
-              },
-              "account": {
-                "type": "string",
-                "description": "Snowflake account identifier (e.g., xy12345.us-east-1)",
+                "description": "DBT profile target name (e.g., dev, prod). Must match a target in your profiles.yml",
                 "minLength": 1
               },
               "user": {
@@ -100,20 +94,6 @@
             }
           },
           "editPresentation": "multilineText"
-        },
-        "dbtRunner.environments": {
-          "type": "array",
-          "default": [
-            "dev",
-            "prod"
-          ],
-          "markdownDescription": "List of dbt target environments. These should match targets in your `profiles.yml`.",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          },
-          "minItems": 1,
-          "uniqueItems": true
         },
         "dbtRunner.autoSetupOnOpen": {
           "type": "boolean",

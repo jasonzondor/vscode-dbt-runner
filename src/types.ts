@@ -1,6 +1,5 @@
-export interface SnowflakeConfig {
-    name: string;
-    account: string;
+export interface ProfileConfig {
+    profileTarget: string;
     user: string;
     privateKeyPath: string;
     privateKeyPassphrase?: string;

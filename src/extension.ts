@@ -19,16 +19,16 @@ export function activate(context: vscode.ExtensionContext) {
         await projectSetup.setupProject();
     });
 
-    const addSnowflakeAccountCommand = vscode.commands.registerCommand('dbt-runner.addSnowflakeAccount', async () => {
-        await configManager.addSnowflakeAccount();
+    const addProfileConfigCommand = vscode.commands.registerCommand('dbt-runner.addProfileConfig', async () => {
+        await configManager.addProfileConfig();
     });
 
-    const removeSnowflakeAccountCommand = vscode.commands.registerCommand('dbt-runner.removeSnowflakeAccount', async () => {
-        await configManager.removeSnowflakeAccount();
+    const removeProfileConfigCommand = vscode.commands.registerCommand('dbt-runner.removeProfileConfig', async () => {
+        await configManager.removeProfileConfig();
     });
 
-    const listSnowflakeAccountsCommand = vscode.commands.registerCommand('dbt-runner.listSnowflakeAccounts', async () => {
-        await configManager.listSnowflakeAccounts();
+    const listProfileConfigsCommand = vscode.commands.registerCommand('dbt-runner.listProfileConfigs', async () => {
+        await configManager.listProfileConfigs();
     });
 
     const runPreCommitCommand = vscode.commands.registerCommand('dbt-runner.runPreCommit', async () => {
@@ -42,9 +42,9 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         runDbtCommand, 
         setupProjectCommand,
-        addSnowflakeAccountCommand,
-        removeSnowflakeAccountCommand,
-        listSnowflakeAccountsCommand,
+        addProfileConfigCommand,
+        removeProfileConfigCommand,
+        listProfileConfigsCommand,
         runPreCommitCommand,
         runProjectEvaluatorCommand
     );

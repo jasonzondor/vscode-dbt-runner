@@ -1,35 +1,20 @@
 import * as vscode from 'vscode';
-import { SnowflakeConfig } from './types';
+import { ProfileConfig } from './types';
 
 export class ConfigManager {
-    async addSnowflakeAccount(): Promise<void> {
-        const name = await vscode.window.showInputBox({
-            prompt: 'Enter a display name for this configuration',
-            placeHolder: 'e.g., Development, Production, Staging',
+    async addProfileConfig(): Promise<void> {
+        const profileTarget = await vscode.window.showInputBox({
+            prompt: 'Enter the dbt profile target name',
+            placeHolder: 'e.g., dev, prod, staging',
             validateInput: (value) => {
                 if (!value || value.trim().length === 0) {
-                    return 'Display name is required';
+                    return 'Profile target is required';
                 }
                 return null;
             }
         });
 
-        if (!name) {
-            return;
-        }
-
-        const account = await vscode.window.showInputBox({
-            prompt: 'Enter your Snowflake account identifier',
-            placeHolder: 'e.g., xy12345.us-east-1, myorg-myaccount',
-            validateInput: (value) => {
-                if (!value || value.trim().length === 0) {
-                    return 'Snowflake account identifier is required';
-                }
-                return null;
-            }
-        });
-
-        if (!account) {
+        if (!profileTarget) {
             return;
         }
 
@@ -95,21 +80,20 @@ export class ConfigManager {
             privateKeyPassphrase = passphrase;
         }
 
-        const newAccount: SnowflakeConfig = {
-            name: name.trim(),
-            account: account.trim(),
+        const newConfig: ProfileConfig = {
+            profileTarget: profileTarget.trim(),
             user: user.trim(),
             privateKeyPath: privateKeyPath.trim(),
             privateKeyPassphrase
         };
 
         const config = vscode.workspace.getConfiguration('dbtRunner');
-        const accounts = config.get<SnowflakeConfig[]>('snowflakeAccounts', []);
+        const configs = config.get<ProfileConfig[]>('profileConfigs', []);
 
-        const existingIndex = accounts.findIndex(acc => acc.name === newAccount.name);
+        const existingIndex = configs.findIndex(cfg => cfg.profileTarget === newConfig.profileTarget);
         if (existingIndex >= 0) {
             const overwrite = await vscode.window.showWarningMessage(
-                `An account named "${newAccount.name}" already exists. Do you want to overwrite it?`,
+                `A configuration for profile target "${newConfig.profileTarget}" already exists. Do you want to overwrite it?`,
                 'Yes', 'No'
             );
 
@@ -117,30 +101,30 @@ export class ConfigManager {
                 return;
             }
 
-            accounts[existingIndex] = newAccount;
+            configs[existingIndex] = newConfig;
         } else {
-            accounts.push(newAccount);
+            configs.push(newConfig);
         }
 
-        await config.update('snowflakeAccounts', accounts, vscode.ConfigurationTarget.Global);
+        await config.update('profileConfigs', configs, vscode.ConfigurationTarget.Global);
 
         vscode.window.showInformationMessage(
-            `Snowflake account "${newAccount.name}" has been ${existingIndex >= 0 ? 'updated' : 'added'} successfully!`
+            `Profile configuration "${newConfig.profileTarget}" has been ${existingIndex >= 0 ? 'updated' : 'added'} successfully!`
         );
     }
 
-    async removeSnowflakeAccount(): Promise<void> {
+    async removeProfileConfig(): Promise<void> {
         const config = vscode.workspace.getConfiguration('dbtRunner');
-        const accounts = config.get<SnowflakeConfig[]>('snowflakeAccounts', []);
+        const configs = config.get<ProfileConfig[]>('profileConfigs', []);
 
-        if (accounts.length === 0) {
-            vscode.window.showInformationMessage('No Snowflake accounts configured.');
+        if (configs.length === 0) {
+            vscode.window.showInformationMessage('No profile configurations found.');
             return;
         }
 
-        const accountNames = accounts.map(acc => acc.name);
-        const selected = await vscode.window.showQuickPick(accountNames, {
-            placeHolder: 'Select account to remove',
+        const profileTargets = configs.map(cfg => cfg.profileTarget);
+        const selected = await vscode.window.showQuickPick(profileTargets, {
+            placeHolder: 'Select profile configuration to remove',
             canPickMany: false
         });
 
@@ -149,7 +133,7 @@ export class ConfigManager {
         }
 
         const confirm = await vscode.window.showWarningMessage(
-            `Are you sure you want to remove the account "${selected}"?`,
+            `Are you sure you want to remove the configuration for profile target "${selected}"?`,
             'Yes', 'No'
         );
 
@@ -157,28 +141,24 @@ export class ConfigManager {
             return;
         }
 
-        const updatedAccounts = accounts.filter(acc => acc.name !== selected);
-        await config.update('snowflakeAccounts', updatedAccounts, vscode.ConfigurationTarget.Global);
+        const updatedConfigs = configs.filter(cfg => cfg.profileTarget !== selected);
+        await config.update('profileConfigs', updatedConfigs, vscode.ConfigurationTarget.Global);
 
-        vscode.window.showInformationMessage(`Snowflake account "${selected}" has been removed.`);
+        vscode.window.showInformationMessage(`Profile configuration "${selected}" has been removed.`);
     }
 
-    async listSnowflakeAccounts(): Promise<void> {
+    async listProfileConfigs(): Promise<void> {
         const config = vscode.workspace.getConfiguration('dbtRunner');
-        const accounts = config.get<SnowflakeConfig[]>('snowflakeAccounts', []);
+        const configs = config.get<ProfileConfig[]>('profileConfigs', []);
 
-        if (accounts.length === 0) {
-            vscode.window.showInformationMessage('No Snowflake accounts configured. Use "DBT Runner: Add Snowflake Account" to add one.');
+        if (configs.length === 0) {
+            vscode.window.showInformationMessage('No profile configurations found. Use "DBT Runner: Add Profile Configuration" to add one.');
             return;
         }
 
-        const accountInfo = accounts.map(acc => 
-            `**${acc.name}**\n  User: ${acc.user}\n  Key: ${acc.privateKeyPath}\n  Passphrase: ${acc.privateKeyPassphrase ? '***' : '(prompt at runtime)'}`
-        ).join('\n\n');
-
         const panel = vscode.window.createWebviewPanel(
-            'snowflakeAccounts',
-            'Snowflake Accounts',
+            'profileConfigs',
+            'Profile Configurations',
             vscode.ViewColumn.One,
             {}
         );
@@ -214,14 +194,13 @@ export class ConfigManager {
                 </style>
             </head>
             <body>
-                <h1>Configured Snowflake Accounts</h1>
-                ${accounts.map(acc => `
+                <h1>Configured Profile Targets</h1>
+                ${configs.map(cfg => `
                     <div class="account">
-                        <div class="account-name">${acc.name}</div>
-                        <div class="account-detail"><span class="label">Account:</span> ${acc.account}</div>
-                        <div class="account-detail"><span class="label">User:</span> ${acc.user}</div>
-                        <div class="account-detail"><span class="label">Private Key:</span> ${acc.privateKeyPath}</div>
-                        <div class="account-detail"><span class="label">Passphrase:</span> ${acc.privateKeyPassphrase ? '***' : '(prompt at runtime)'}</div>
+                        <div class="account-name">${cfg.profileTarget}</div>
+                        <div class="account-detail"><span class="label">User:</span> ${cfg.user}</div>
+                        <div class="account-detail"><span class="label">Private Key:</span> ${cfg.privateKeyPath}</div>
+                        <div class="account-detail"><span class="label">Passphrase:</span> ${cfg.privateKeyPassphrase ? '***' : '(prompt at runtime)'}</div>
                     </div>
                 `).join('')}
             </body>

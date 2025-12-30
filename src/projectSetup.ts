@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { SnowflakeConfig, normalizePathForPython } from './types';
+import { ProfileConfig, normalizePathForPython } from './types';
 
 export class ProjectSetup {
     private outputChannel: vscode.OutputChannel;
@@ -71,24 +71,23 @@ export class ProjectSetup {
 
         const workspaceRoot = vscode.workspace.workspaceFolders[0].uri.fsPath;
 
-        const snowflakeConfig = await this.getSnowflakeConfig();
-        if (!snowflakeConfig) {
+        const profileConfig = await this.getProfileConfig();
+        if (!profileConfig) {
             return;
         }
 
         const env = {
             ...process.env,
-            DBT_ACCOUNT: snowflakeConfig.account,
-            DBT_USER: snowflakeConfig.user,
-            DBT_PVK_PATH: normalizePathForPython(snowflakeConfig.privateKeyPath),
-            DBT_PVK_PASS: snowflakeConfig.privateKeyPassphrase || ''
+            DBT_USER: profileConfig.user,
+            DBT_PVK_PATH: normalizePathForPython(profileConfig.privateKeyPath),
+            DBT_PVK_PASS: profileConfig.privateKeyPassphrase || ''
         };
 
         this.outputChannel.clear();
         this.outputChannel.show();
         this.outputChannel.appendLine('Running pre-commit checks...');
         this.outputChannel.appendLine(`Workspace: ${workspaceRoot}`);
-        this.outputChannel.appendLine(`Configuration: ${snowflakeConfig.name}`);
+        this.outputChannel.appendLine(`Profile Target: ${profileConfig.profileTarget}`);
         this.outputChannel.appendLine('---\n');
 
         await vscode.window.withProgress({
@@ -104,30 +103,30 @@ export class ProjectSetup {
         vscode.window.showInformationMessage('Pre-commit checks complete!');
     }
 
-    private async getSnowflakeConfig(): Promise<SnowflakeConfig | undefined> {
+    private async getProfileConfig(): Promise<ProfileConfig | undefined> {
         const config = vscode.workspace.getConfiguration('dbtRunner');
-        const accounts = config.get<SnowflakeConfig[]>('snowflakeAccounts', []);
+        const configs = config.get<ProfileConfig[]>('profileConfigs', []);
 
-        if (accounts.length === 0) {
+        if (configs.length === 0) {
             const answer = await vscode.window.showWarningMessage(
-                'No Snowflake accounts configured. Would you like to configure one now?',
+                'No profile configurations found. Would you like to configure one now?',
                 'Yes', 'No'
             );
             
             if (answer === 'Yes') {
-                await vscode.commands.executeCommand('workbench.action.openSettings', 'dbtRunner.snowflakeAccounts');
+                await vscode.commands.executeCommand('workbench.action.openSettings', 'dbtRunner.profileConfigs');
             }
             return undefined;
         }
 
-        let selectedAccount: SnowflakeConfig | undefined;
+        let selectedConfig: ProfileConfig | undefined;
 
-        if (accounts.length === 1) {
-            selectedAccount = accounts[0];
+        if (configs.length === 1) {
+            selectedConfig = configs[0];
         } else {
-            const accountNames = accounts.map(acc => acc.name);
-            const selected = await vscode.window.showQuickPick(accountNames, {
-                placeHolder: 'Select Snowflake account',
+            const profileTargets = configs.map(cfg => cfg.profileTarget);
+            const selected = await vscode.window.showQuickPick(profileTargets, {
+                placeHolder: 'Select profile target',
                 canPickMany: false
             });
 
@@ -135,17 +134,17 @@ export class ProjectSetup {
                 return undefined;
             }
 
-            selectedAccount = accounts.find(acc => acc.name === selected);
+            selectedConfig = configs.find(cfg => cfg.profileTarget === selected);
         }
 
-        if (!selectedAccount) {
+        if (!selectedConfig) {
             return undefined;
         }
 
-        let passphrase = selectedAccount.privateKeyPassphrase;
+        let passphrase = selectedConfig.privateKeyPassphrase;
         if (!passphrase) {
             passphrase = await vscode.window.showInputBox({
-                prompt: `Enter private key passphrase for ${selectedAccount.name}`,
+                prompt: `Enter private key passphrase for profile target "${selectedConfig.profileTarget}"`,
                 password: true
             });
 
@@ -155,7 +154,7 @@ export class ProjectSetup {
         }
 
         return {
-            ...selectedAccount,
+            ...selectedConfig,
             privateKeyPassphrase: passphrase
         };
     }
