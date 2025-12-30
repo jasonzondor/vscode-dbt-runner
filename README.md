@@ -124,9 +124,10 @@ Run the setup command to install dependencies:
 
 1. Open Command Palette (`Ctrl+Shift+P` or `Cmd+Shift+P`)
 2. Type "DBT Runner: Setup Project"
-3. This will run:
+3. Choose whether to include CI/CD packages (for pre-commit checks)
+4. This will run:
    - `poetry lock`
-   - `poetry install`
+   - `poetry install` (or `poetry install --with cicd` if CI/CD selected)
    - `poetry run dbt deps`
 
 ### Run DBT Commands
@@ -139,7 +140,17 @@ Run the setup command to install dependencies:
 5. Select the Snowflake account (if multiple configured)
 6. Enter private key passphrase (if not configured)
 
-The command will execute in a new terminal with the appropriate environment variables set.
+The command will execute in a terminal with the appropriate environment variables set.
+
+### Run Pre-Commit Checks
+
+Run pre-commit checks on all files:
+
+1. Open Command Palette (`Ctrl+Shift+P` or `Cmd+Shift+P`)
+2. Type "DBT Runner: Run Pre-Commit Checks"
+3. This will run: `poetry run pre-commit run --all-files`
+
+**Note:** Make sure you've installed CI/CD packages during project setup by selecting the option when running "DBT Runner: Setup Project" and choosing the option "Yes - Include CI/CD packages (--with cicd)".
 
 ## Project Structure
 
@@ -183,6 +194,7 @@ outputs:
 ### DBT Operations
 - **DBT Runner: Run DBT Command** (`dbt-runner.runDbt`): Execute a dbt command with interactive prompts
 - **DBT Runner: Setup Project** (`dbt-runner.setupProject`): Run poetry install and dbt deps
+- **DBT Runner: Run Pre-Commit Checks** (`dbt-runner.runPreCommit`): Run pre-commit checks on all files
 
 ### Account Management
 - **DBT Runner: Add Snowflake Account** (`dbt-runner.addSnowflakeAccount`): Interactively add a new Snowflake account

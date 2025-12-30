@@ -2,7 +2,7 @@
   "name": "dbt-runner",
   "displayName": "DBT Runner",
   "description": "VS Code extension for running dbt projects with Snowflake key pair authentication",
-  "version": "0.3.2",
+  "version": "0.4.2",
   "publisher": "jason-zondor",
   "repository": {
     "type": "git",
@@ -39,6 +39,10 @@
       {
         "command": "dbt-runner.listSnowflakeAccounts",
         "title": "DBT Runner: List Snowflake Accounts"
+      },
+      {
+        "command": "dbt-runner.runPreCommit",
+        "title": "DBT Runner: Run Pre-Commit Checks"
       }
     ],
     "keybindings": [

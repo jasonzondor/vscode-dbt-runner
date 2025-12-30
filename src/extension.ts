@@ -31,12 +31,17 @@ export function activate(context: vscode.ExtensionContext) {
         await configManager.listSnowflakeAccounts();
     });
 
+    const runPreCommitCommand = vscode.commands.registerCommand('dbt-runner.runPreCommit', async () => {
+        await projectSetup.runPreCommit();
+    });
+
     context.subscriptions.push(
         runDbtCommand, 
         setupProjectCommand,
         addSnowflakeAccountCommand,
         removeSnowflakeAccountCommand,
-        listSnowflakeAccountsCommand
+        listSnowflakeAccountsCommand,
+        runPreCommitCommand
     );
 
     if (vscode.workspace.workspaceFolders) {
