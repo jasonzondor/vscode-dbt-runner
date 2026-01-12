@@ -186,7 +186,7 @@ export class DbtRunner {
     ) {
         const config = vscode.workspace.getConfiguration('dbtRunner');
         const dbtProjectPath = config.get<string>('dbtProjectPath', 'dbt');
-        const fullDbtPath = path.join(workspaceRoot, dbtProjectPath);
+        const fullDbtPath = path.resolve(workspaceRoot, dbtProjectPath);
 
         const env = {
             ...process.env,
